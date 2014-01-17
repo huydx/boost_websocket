@@ -7,7 +7,6 @@
 #include <boost/mpl/at.hpp>
 #include "JSON_.h"
 #include "message_server/container/uri.hpp"
-#include "system/sequence_builder.hpp"
 
 struct node_not_found {};
 struct unable_to_open_config_file {};
@@ -45,8 +44,6 @@ public:
   unsigned int get_server_number() const { return server_number; }
   unsigned int get_world_number() const { return world_number; }
   unsigned int get_tell_category_id() const { return tell_category_id; }
-  const boost::function< void() > &get_next_task();
-  size_t get_send_chunk_size() const { return send_chunk_size; }
 private:
   static common::json load_json( const std::string filename );
   message_server::uri server_addr;
@@ -55,10 +52,6 @@ private:
   unsigned int server_number;
   unsigned int world_number;
   unsigned int tell_category_id;
-  sequence_builder::task_queue_t sequence;
-  sequence_builder::task_queue_t::const_iterator current_task;
-  boost::mutex guard;
-  size_t send_chunk_size;
 };
 
 #endif

@@ -2,7 +2,6 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 
-#include "network/connect.hpp"
 #include "system/config.hpp"
 #include "system/config.hpp"
 #include "rpc/MRSClient.h"
@@ -51,7 +50,6 @@ public:
     oneup::TaskPtr task( network_ );
     oneup::Engine::getInstance()->add( TASK_ID_NETWORK_SERVICE, task, 16 );
     client = network_->connect( hostname.c_str(), port );
-    client->setEventListener( new event_receiver( configs, client->getId() ) );
     client->addContract( "MRSGMPROTO", new CMRSGmContract() );
     client->getTransporter().setSocket( new oneup::foundation::TCPSocket() );
     oneup::TaskId client_id = client->getId();

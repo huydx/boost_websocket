@@ -1,5 +1,10 @@
 #pragma once
 
+#if defined( __GNUC__ ) && ( __GNUC__ == 4 && __GNUC_MINOR__ >= 2 )
+#include <boost/thread.hpp>
+#else
+#endif
+
 #include <gal_common.h>
 #include <Common.h>
 
@@ -37,11 +42,13 @@ public:
   virtual ~MRSClient();
 
   int initialize( CMRSGmContract& rContract, oneup::Client& rConnect);
-  int isConnect() const;
+  bool isConnect() const;
   bool onOpen();
   bool onClose();
   int proceed();
   int terminate();
+  CMRSGmContract&		getSender() const { return *(m_pSender); };
+	const CONNECTUID	getUID() const { return m_connectUID; };
 
   uint64_t gen_id() const {
 		static uint64_t value = 0ull;
@@ -64,14 +71,22 @@ public:
   void delGroup_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result);
   void addMember_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result);
   void delMember_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result);
-  void post_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result);
-  void getMembers_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result, MRSGmProto::destinations);
+  void post_Response( MRSGmProto::request_id_t, MRSGmProto::result_list result);
+  void postDialog_Response( MRSGmProto::request_id_t, MRSGmProto::result_list result);
+	void vanishMember_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result); 
+	void erase_Response( MRSGmProto::request_id_t, MRSGmProto::result_list result); 
+	void unlink_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result);
+	void update_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result);
+	void getMembers_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result, MRSGmProto::destinations);
+  void modifyGroup_Response(MRSGmProto::request_id_t, MRSGmProto::result_t result);
 
   void C_MRSGM_CHAR_LOGIN_REQ_Response( MRSGmProto::cuid_t, MRSGmProto::destinations);
   void S_MRSGM_NOTIFY_GROUPS( MRSGmProto::cuid_t, MRSGmProto::destinations);
-  void S_MRSGM_NOTIFY_MESSAGE( MRSGmProto::receivers_t, MRSGmProto::destination_t, MRSGmProto::blob_t);
-  void S_MRSGM_NOTIFY_YOU_ARE_INVITED( MRSGmProto::receivers_t, MRSGmProto::character_info_list_t, MRSGmProto::destinations); 
-  void S_MRSGM_NOTIFY_YOU_ARE_KICKED( MRSGmProto::receivers_t, MRSGmProto::character_info_list_t, MRSGmProto::destinations);
+	void S_MRSGM_NOTIFY_MESSAGE( MRSGmProto::receivers_t, MRSGmProto::destination_t, MRSGmProto::blob_t);
+	void S_MRSGM_NOTIFY_YOU_ARE_INVITED( MRSGmProto::receivers_t, MRSGmProto::destinations);
+	void S_MRSGM_NOTIFY_THEY_ARE_INVITED( MRSGmProto::receivers_t, MRSGmProto::character_info_list_t, MRSGmProto::destinations);
+	void S_MRSGM_NOTIFY_YOU_ARE_KICKED( MRSGmProto::receivers_t, MRSGmProto::destinations);
+	void S_MRSGM_NOTIFY_THEY_ARE_KICKED( MRSGmProto::receivers_t, MRSGmProto::character_info_list_t, MRSGmProto::destinations);
 
 private:
   const CONNECTUID m_connectUID; 

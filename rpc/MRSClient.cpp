@@ -24,7 +24,7 @@
 #include "MRSClient.h"
 
 MRSClient::MRSClient(oneup::Contract* pContract)
-  : IClientprotoReceiver(pContract)
+  : IClientMRSGmProtoReceiver(pContract)
   , m_connectUID(CSvUtil::createUID64())
 {
   m_pClient			= NULL;
@@ -109,12 +109,7 @@ bool MRSClient::sendC_MRSGM_GMSVINFO_REQ()
   if (0 != m_tiInitializeRequestTime)     return false;   // ２重リクエストの防止
   m_tiInitializeRequestTime = time(NULL);
 
-  getSender().C_MRSGM_GMSVINFO_REQ(
-          CConfig::m_sConfig.worldnumber
-          , CConfig::m_sConfig.servernumber
-          , CServerCtx::getInstance().getThisHostIP()
-          , CConfig::m_sConfig.port
-  );
+  getSender().C_MRSGM_GMSVINFO_REQ(0, 247, "127.0.0.1", 8000);
   return true;
 }
 
@@ -122,7 +117,6 @@ void MRSClient::C_MRSGM_CHAR_LOGIN_REQ_Response(
   proto::cuid_t cuid,
 	proto::destinations groups
 ) {
-  std::cout << "char login responsed" << std::endl;
 }
 
 void MRSClient::S_MRSGM_NOTIFY_MESSAGE(
@@ -130,5 +124,75 @@ void MRSClient::S_MRSGM_NOTIFY_MESSAGE(
   proto::destination_t groups_oue,
   proto::blob_t notify_blob
 ) {
-  std::cout << "message coming!!" << std::endl;
+}
+
+void MRSClient::C_MRSGM_GMSVINFO_REQ_Response(oneup::s32 iResult, oneup::string strError)
+{
+}
+
+void MRSClient::S_MRSGM_NOTIFY_GROUPS(
+	MRSGmProto::cuid_t cuid,
+	MRSGmProto::destinations groups
+) {
+}
+
+void MRSClient::S_MRSGM_NOTIFY_YOU_ARE_INVITED(
+	MRSGmProto::receivers_t receivers_oue,
+	MRSGmProto::destinations groups_oue
+) {
+}
+
+void MRSClient::S_MRSGM_NOTIFY_YOU_ARE_KICKED(
+	MRSGmProto::receivers_t receivers_oue,
+	MRSGmProto::destinations groups_oue
+) {
+}
+
+void MRSClient::S_MRSGM_NOTIFY_THEY_ARE_INVITED(
+	MRSGmProto::receivers_t receivers_oue,
+	MRSGmProto::character_info_list_t infos,
+	MRSGmProto::destinations groups
+) {
+}
+
+void MRSClient::S_MRSGM_NOTIFY_THEY_ARE_KICKED(
+	MRSGmProto::receivers_t receivers_oue,
+	MRSGmProto::character_info_list_t infos,
+	MRSGmProto::destinations groups
+) {
+}
+
+void MRSClient::addGroup_Response(
+	MRSGmProto::request_id_t id,
+	MRSGmProto::result_t result
+) {
+}
+void MRSClient::addMember_Response(
+  MRSGmProto::request_id_t id,
+  MRSGmProto::result_t result
+) {
+}
+
+void MRSClient::delMember_Response(
+  MRSGmProto::request_id_t id,
+  MRSGmProto::result_t result
+) {
+}
+
+void MRSClient::delGroup_Response(
+  MRSGmProto::request_id_t id,
+  MRSGmProto::result_t result
+) {
+}
+
+void MRSClient::post_Response(
+  MRSGmProto::request_id_t id,
+  MRSGmProto::result_list result
+) {
+}
+
+void modifyGroup_Response(
+  MRSGmProto::request_id_t, 
+  MRSGmProto::result_t result
+) {
 }

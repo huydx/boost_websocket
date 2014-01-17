@@ -6,11 +6,7 @@
 #include "grammar/UTF8.h"
 #include "message_server/grammar/uri.hpp"
 #include "system/config.hpp"
-#include "system/sequence_builder.hpp"
 #include "utility/to_utf8.hpp"
-
-#include "network/connect.hpp"
-#include "network/done.hpp"
 
 const common::json &get_child_node( const common::json &node, const std::u32string &name ) {
   if( node.which() != common::json_struct )
@@ -65,11 +61,6 @@ config::config( const std::string filename ) {
   server_number = get_child_node_in_type< common::json_number >( json, U"サーバ番号" );
   world_number = get_child_node_in_type< common::json_number >( json, U"ワールド番号" );
   tell_category_id = get_child_node_in_type< common::json_number >( json, U"ダイレクトチャットのカテゴリID" );
-  send_chunk_size = get_child_node_in_type< common::json_number >( json, U"送信ウィンドウサイズ" );
-  const auto script = get_child_node_in_type< common::json_string >( json, U"スクリプト" );
-  sequence = sequence_builder::run_script( utility::to_utf8( script ) );
-  sequence.push_back( &done );
-  current_task = sequence.begin();
 }
 
 common::json config::load_json( const std::string filename ) {
@@ -94,12 +85,3 @@ common::json config::load_json( const std::string filename ) {
     throw invalid_config_file();
   }
 }
-
-const boost::function< void() > &config::get_next_task() {
-  boost::mutex::scoped_lock lock( guard );
-  const auto &task = *current_task;
-  if( std::distance( current_task, static_cast< sequence_builder::task_queue_t::const_iterator >( sequence.end() ) ) != 1u )
-    ++current_task;
-  return task;
-}
-
