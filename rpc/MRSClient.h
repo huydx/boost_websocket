@@ -72,13 +72,13 @@ public:
   void addMember_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result);
   void delMember_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result);
   void post_Response( MRSGmProto::request_id_t, MRSGmProto::result_list result);
-  void postDialog_Response( MRSGmProto::request_id_t, MRSGmProto::result_list result);
-	void vanishMember_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result); 
-	void erase_Response( MRSGmProto::request_id_t, MRSGmProto::result_list result); 
-	void unlink_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result);
-	void update_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result);
-	void getMembers_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result, MRSGmProto::destinations);
-  void modifyGroup_Response(MRSGmProto::request_id_t, MRSGmProto::result_t result);
+  void postDialog_Response( MRSGmProto::request_id_t, MRSGmProto::result_list result){};
+	void vanishMember_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result){}; 
+	void erase_Response( MRSGmProto::request_id_t, MRSGmProto::result_list result){}; 
+	void unlink_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result){};
+	void update_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result){};
+	void getMembers_Response( MRSGmProto::request_id_t, MRSGmProto::result_t result, MRSGmProto::destinations){};
+  void modifyGroup_Response(MRSGmProto::request_id_t, MRSGmProto::result_t result){};
 
   void C_MRSGM_CHAR_LOGIN_REQ_Response( MRSGmProto::cuid_t, MRSGmProto::destinations);
   void S_MRSGM_NOTIFY_GROUPS( MRSGmProto::cuid_t, MRSGmProto::destinations);

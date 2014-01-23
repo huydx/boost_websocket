@@ -15,12 +15,94 @@
 
 const oneup::TaskId TASK_ID_NETWORK_SERVICE = 1000;
 
-using namespace std;
-namespace asio = boost::asio;
-namespace ip = asio::ip;
-const char CHAT_MESSAGE_ENDING[2] = "\n";
+using boost::asio::ip::tcp;
 
-struct invalid_arguments {};
+class session { //ウェブソケットサーバとのやり取り実装
+public:
+  session(boost::asio::io_service& io_service)
+    : socket_(io_service)
+  {
+  }
+
+  tcp::socket& socket()
+  {
+    return socket_;
+  }
+
+  void start()
+  {
+    socket_.async_read_some(boost::asio::buffer(data_, max_length),
+        boost::bind(&session::handle_read, this,
+          boost::asio::placeholders::error,
+          boost::asio::placeholders::bytes_transferred));
+  }
+
+  void handle_read(const boost::system::error_code& error,
+      size_t bytes_transferred)
+  {
+    if (!error) {
+      boost::asio::async_write(socket_,
+          boost::asio::buffer(data_, bytes_transferred),
+          boost::bind(&session::handle_write, this,
+            boost::asio::placeholders::error));
+    }
+    else {
+      delete this;
+    }
+  }
+
+  void handle_write(const boost::system::error_code& error) {
+    if (!error) {
+      socket_.async_read_some(boost::asio::buffer(data_, max_length),
+          boost::bind(&session::handle_read, this,
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::bytes_transferred));
+    }
+    else {
+      delete this;
+    }
+  }
+
+private:
+  tcp::socket socket_;
+  enum { max_length = 1024 };
+  char data_[max_length];
+};
+
+
+class server { //ウェブソケットサーバと接続TCPサーバ
+public:
+  server(boost::asio::io_service& io_service, short port)
+    : io_service_(io_service),
+      acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
+  {
+    session* new_session = new session(io_service_);
+    acceptor_.async_accept(new_session->socket(),
+        boost::bind(&server::handle_accept, this, new_session,
+          boost::asio::placeholders::error));
+  }
+
+  void handle_accept(session* new_session,
+      const boost::system::error_code& error)
+  {
+    if (!error) {
+      new_session->start();
+      new_session = new session(io_service_);
+      std::cout << "session handle accept" << std::endl;
+      acceptor_.async_accept(new_session->socket(),
+          boost::bind(&server::handle_accept, this, new_session,
+            boost::asio::placeholders::error));
+    }
+    else {
+      delete new_session;
+    }
+  }
+
+private:
+  boost::asio::io_service& io_service_;
+  tcp::acceptor acceptor_;
+};
+
 
 class DependsOnOUEngine {
 private:
@@ -42,6 +124,16 @@ public:
     OUE_::init();
   }
 };
+
+struct context {
+	CMRSGmContract* contract;
+};
+
+context &get_context();
+context& get_context() {
+	static context instance = context();
+	return instance;
+}
 
 class Connection : DependsOnOUEngine {
 public:
@@ -65,44 +157,20 @@ private:
   oneup::ClientPtr client;
 };
 
-boost::shared_ptr< Connection > mrs_connection;
-
-void connect_mrs_server() {
-  mrs_connection = 
-    boost::shared_ptr< Connection > conn( new Connection(
-      get_context().configs->get_server_addr().authority->host,
-      *get_context().configs->get_server_addr().authority->port,
-      get_context().configs
-    ) );
-}
-
 int main(int argc, const char* const argv[]) {
-  char port[5] = "";
-  strcpy(port, argv[1]);
-
-  asio::io_service io_service;
-  ip::tcp::socket sock(io_service);
-
   try {
-    cout << "establish server at: " << port << "\n";
-    ip::tcp::acceptor acceptor( io_service, ip::tcp::endpoint( ip::tcp::v4(), atoi(port) ) );
-    acceptor.accept(sock);
-
-    string buffer;
-    while (true) {
-      asio::streambuf receive_buffer;
-      boost::system::error_code error;
-      asio::read(sock, receive_buffer, asio::transfer_at_least(1), error);
-      if (error && error != asio::error::eof) {
-          std::cout << "receive failed: " << error.message() << std::endl;
-      }
-      else if (asio::buffer_cast<const char*>
-                (receive_buffer.data()) == string(CHAT_MESSAGE_ENDING)) { //メッセージの最終文字は"\n"
-          break;
-      }
+    if (argc != 2) {
+      std::cerr << "Usage: chat_tool <port>\n";
+      return 1;
     }
-    return 0;
-  } catch (...) {
-    cerr << "some error occurred;" << endl;
+
+    boost::asio::io_service io_service;
+    server s(io_service, std::atoi(argv[1]));
+    io_service.run();
   }
+  catch (std::exception& e) {
+    std::cerr << "Exception: " << e.what() << "\n";
+  }
+
+  return 0;
 }

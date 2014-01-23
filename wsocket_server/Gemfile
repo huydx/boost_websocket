@@ -1,0 +1,6 @@
+source 'https://rubygems.org'
+gem 'em-websocket'
+gem 'debugger'
+gem 'celluloid-io'
+gem 'sinatra'
+gem 'haml'

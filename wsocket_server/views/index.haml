@@ -1,0 +1,15 @@
+%head
+  Aiming chat system
+%body
+  %form#chatForm{action: '/chat', method: 'post'}
+    %input{type: 'text', name: 'chatMsg'}
+
+:javascript
+  window.onload = function() {
+    (function() {
+      var ws = new WebSocket('ws://192.168.2.176:1234');
+      ws.onopen = function() { console.log('open'); }
+      ws.onclose = function() { console.log('close'); }
+      ws.onmessage = function() { console.log('message'); }
+    })();
+  }

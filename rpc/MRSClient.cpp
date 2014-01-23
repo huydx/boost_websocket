@@ -190,9 +190,3 @@ void MRSClient::post_Response(
   MRSGmProto::result_list result
 ) {
 }
-
-void modifyGroup_Response(
-  MRSGmProto::request_id_t, 
-  MRSGmProto::result_t result
-) {
-}
